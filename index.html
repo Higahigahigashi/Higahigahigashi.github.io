@@ -6,326 +6,774 @@
   <title>Yuailo｜AI活用支援・研修</title>
   <meta name="description" content="営業・バックオフィスのAI活用なら、現場を知るプロにお任せください。中小企業向けAI顧問・AI人材育成研修。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy: #111111;
-      --navy-light: #1e1e1e;
+      --black: #0a0a0a;
+      --dark: #111111;
+      --dark2: #1a1a1a;
       --gold: #e8a000;
+      --gold-light: #f5b830;
+      --gold-dim: rgba(232,160,0,0.15);
       --white: #ffffff;
-      --gray: #f7f5f0;
+      --off-white: #f8f7f4;
+      --gray: #f2f0eb;
       --text: #1a1a1a;
-      --text-light: #666;
+      --text-muted: #666666;
+      --border: #e8e4dc;
     }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Noto Sans JP', sans-serif;
+      font-family: 'Noto Sans JP', 'Plus Jakarta Sans', sans-serif;
       color: var(--text);
       line-height: 1.7;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ナビ */
+    /* ===== HEADER ===== */
     header {
-      background: var(--navy);
-      padding: 18px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
+      position: fixed;
+      top: 0; left: 0; right: 0;
       z-index: 100;
+      padding: 0 48px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s;
     }
 
-    .logo {
+    /* SVGロゴ（仮） */
+    .logo-svg {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
       color: var(--white);
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: -0.02em;
     }
 
-    .logo span { color: var(--gold); }
+    .logo-text span { color: var(--gold); }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
 
     nav a {
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.65);
       text-decoration: none;
-      margin-left: 28px;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
       transition: color 0.2s;
     }
 
-    nav a:hover { color: var(--gold); }
+    nav a:hover { color: var(--white); }
 
-    /* ヒーロー */
-    .hero {
-      background: linear-gradient(135deg, #0a0a0a 0%, #1e1e1e 100%);
-      color: var(--white);
-      padding: 100px 40px;
-      text-align: center;
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black) !important;
+      padding: 9px 22px;
+      border-radius: 6px;
+      font-weight: 700 !important;
+      transition: opacity 0.2s !important;
     }
 
-    .hero-badge {
-      display: inline-block;
-      border: 1px solid var(--gold);
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 48px 80px;
+    }
+
+    /* 背景の装飾 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(232,160,0,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,160,0,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* グリッド線の装飾 */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(232,160,0,0.1);
+      border: 1px solid rgba(232,160,0,0.3);
       color: var(--gold);
-      font-size: 0.8rem;
-      padding: 4px 16px;
-      border-radius: 20px;
-      margin-bottom: 24px;
-      letter-spacing: 0.1em;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 100px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
     }
 
     .hero h1 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 20px;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
     }
 
-    .hero h1 em {
-      font-style: normal;
-      color: var(--gold);
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .hero p {
-      font-size: 1rem;
-      color: rgba(255,255,255,0.75);
-      max-width: 560px;
-      margin: 0 auto 36px;
+    .hero-desc {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.6);
+      max-width: 540px;
+      line-height: 1.8;
+      margin-bottom: 48px;
     }
 
-    .btn {
-      display: inline-block;
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: var(--gold);
-      color: var(--navy);
+      color: var(--black);
       font-weight: 700;
-      padding: 14px 40px;
-      border-radius: 4px;
+      font-size: 0.95rem;
+      padding: 16px 36px;
+      border-radius: 8px;
       text-decoration: none;
-      font-size: 1rem;
-      transition: opacity 0.2s;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
     }
 
-    .btn:hover { opacity: 0.85; }
-
-    /* セクション共通 */
-    section {
-      padding: 80px 40px;
-      max-width: 960px;
-      margin: 0 auto;
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(232,160,0,0.35);
     }
 
-    .section-label {
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .btn-secondary:hover { color: var(--white); }
+
+    .btn-secondary::after {
+      content: '→';
+      transition: transform 0.2s;
+    }
+
+    .btn-secondary:hover::after { transform: translateX(4px); }
+
+    /* 数値 */
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-number {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
       font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== セクション共通 ===== */
+    .section-wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 100px 48px;
+    }
+
+    .section-head {
+      margin-bottom: 64px;
+    }
+
+    .section-tag {
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--gold);
-      letter-spacing: 0.15em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      display: block;
     }
 
-    h2 {
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      color: var(--navy);
-      margin-bottom: 40px;
+    .section-title {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
     }
 
-    /* 課題 */
-    .problems { background: var(--gray); }
+    .section-title-light {
+      color: var(--white);
+    }
 
-    .problems > div { max-width: 960px; margin: 0 auto; padding: 80px 40px; }
+    .section-sub {
+      margin-top: 16px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+
+    /* ===== PROBLEM ===== */
+    .problem-section {
+      background: var(--off-white);
+    }
 
     .problem-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
     }
 
     .problem-card {
       background: var(--white);
-      border-left: 4px solid var(--gold);
-      padding: 20px 24px;
-      border-radius: 4px;
-      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 28px 28px 32px;
+      position: relative;
+      transition: box-shadow 0.2s, transform 0.2s;
     }
 
     .problem-card::before {
-      content: "😓";
-      display: block;
-      font-size: 1.4rem;
-      margin-bottom: 8px;
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 3px;
+      background: var(--gold);
+      border-radius: 0 2px 2px 0;
     }
 
-    /* サービス */
+    .problem-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .problem-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .problem-card p {
+      font-size: 0.93rem;
+      color: var(--text);
+      line-height: 1.7;
+      font-weight: 500;
+    }
+
+    /* ===== SERVICES ===== */
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 24px;
     }
 
     .service-card {
-      border: 1px solid #e0e4ec;
-      border-radius: 8px;
-      padding: 32px 28px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
     }
 
-    .service-icon {
-      font-size: 2rem;
-      margin-bottom: 12px;
+    .service-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .service-card:hover {
+      box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+      transform: translateY(-4px);
+      border-color: transparent;
+    }
+
+    .service-card:hover::after { transform: scaleX(1); }
+
+    .service-icon-wrap {
+      width: 52px; height: 52px;
+      background: var(--gold-dim);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
     }
 
     .service-card h3 {
-      font-size: 1.1rem;
-      color: var(--navy);
-      margin-bottom: 8px;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
     }
 
     .service-card p {
-      font-size: 0.9rem;
-      color: var(--text-light);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.8;
     }
 
-    /* 強み */
-    .strengths { background: #111111; color: var(--white); }
+    /* ===== WHY ===== */
+    .why-section {
+      background: var(--dark);
+    }
 
-    .strengths > div { max-width: 960px; margin: 0 auto; padding: 80px 40px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+    }
 
-    .strengths h2 { color: var(--white); }
-
-    .strengths .section-label { color: var(--gold); }
-
-    .strength-list { list-style: none; }
-
-    .strength-list li {
-      padding: 16px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    .why-item {
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.06);
       display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      font-size: 0.95rem;
+      gap: 20px;
+      transition: background 0.2s;
     }
 
-    .strength-list li::before {
-      content: "✓";
-      color: var(--gold);
-      font-weight: 700;
+    .why-item:hover { background: rgba(255,255,255,0.03); }
+
+    .why-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: rgba(232,160,0,0.2);
+      line-height: 1;
       flex-shrink: 0;
-      margin-top: 2px;
+      letter-spacing: -0.05em;
+      user-select: none;
     }
 
-    /* CTA */
-    .cta {
-      text-align: center;
-      background: var(--gray);
-    }
-
-    .cta h2 { color: var(--navy); }
-
-    .cta p {
-      color: var(--text-light);
-      margin-bottom: 32px;
+    .why-body h3 {
       font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+      line-height: 1.5;
     }
 
-    /* フッター */
-    footer {
-      background: var(--navy);
-      color: rgba(255,255,255,0.5);
-      text-align: center;
-      padding: 28px;
+    .why-body p {
       font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.8;
     }
 
-    @media (max-width: 600px) {
-      header { padding: 16px 20px; }
+    /* ===== CTA ===== */
+    .cta-section {
+      background: var(--black);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(232,160,0,0.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .cta-section .section-wrap {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-section .section-title {
+      color: var(--white);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      margin-bottom: 16px;
+    }
+
+    .cta-section .section-sub {
+      color: rgba(255,255,255,0.5);
+      margin: 0 auto 48px;
+    }
+
+    .cta-email {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--gold);
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid rgba(232,160,0,0.3);
+      padding: 10px 24px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+      transition: all 0.2s;
+    }
+
+    .cta-email:hover {
+      background: var(--gold-dim);
+      border-color: rgba(232,160,0,0.6);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--dark);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    .footer-logo span { color: var(--gold); }
+
+    footer p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ===== スクロールアニメーション ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-up:nth-child(2) { transition-delay: 0.1s; }
+    .fade-up:nth-child(3) { transition-delay: 0.2s; }
+    .fade-up:nth-child(4) { transition-delay: 0.3s; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      header { padding: 0 24px; }
       nav { display: none; }
-      .hero { padding: 70px 20px; }
-      section, .problems > div, .strengths > div { padding: 60px 20px; }
+
+      .hero { padding: 100px 24px 64px; }
+      .hero h1 { font-size: 2.2rem; }
+      .hero-stats { gap: 32px; }
+
+      .section-wrap { padding: 72px 24px; }
+
+      .problem-grid { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: 1fr; }
+      .why-grid { grid-template-columns: 1fr; }
+
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 28px 24px; }
     }
   </style>
 </head>
 <body>
 
+<!-- ===== HEADER ===== -->
 <header>
-  <div class="logo">Yu<span>ai</span>lo</div>
+  <a href="/" class="logo-svg">
+    <!-- 仮のSVGロゴマーク -->
+    <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="8" fill="#e8a000" fill-opacity="0.15"/>
+      <path d="M8 22L14 10L16 14.5L18 10L24 22" stroke="#e8a000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="18" r="2" fill="#e8a000"/>
+    </svg>
+    <span class="logo-text">Yu<span>ai</span>lo</span>
+  </a>
   <nav>
     <a href="#services">サービス</a>
-    <a href="#strengths">強み</a>
-    <a href="#contact">お問い合わせ</a>
+    <a href="#why">強み</a>
+    <a href="#contact" class="nav-cta">無料相談</a>
   </nav>
 </header>
 
-<!-- ヒーロー -->
-<section class="hero" style="max-width:100%; padding:100px 40px;">
-  <div class="hero-badge">AI顧問 ・ AI人材育成研修</div>
-  <h1>現場を知るAIの専門家が<br><em>あなたの会社を変える</em></h1>
-  <p>「AIを使いたいけど、何から始めればいいかわからない」<br>そんな中小企業の経営者・バックオフィスの方を全力でサポートします。</p>
-  <a href="#contact" class="btn">無料相談はこちら</a>
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">AI顧問 ・ AI人材育成研修</div>
+    <h1>
+      AIを使って、<br>
+      <span class="gradient-text">思考を拡張する。</span>
+    </h1>
+    <p class="hero-desc">
+      「AIを使いたいけど、何から始めればいいかわからない」<br>
+      現場経験を持つAIの専門家が、導入から定着まで伴走します。
+    </p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">無料相談はこちら</a>
+      <a href="#services" class="btn-secondary">サービスを見る</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">3+</span>
+        <span class="stat-label">業界での実務経験</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">ハンズオン形式</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">初回</span>
+        <span class="stat-label">相談無料</span>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- 課題 -->
-<div class="problems">
-  <div>
-    <div class="section-label">Problem</div>
-    <h2>こんなお悩みはありませんか？</h2>
+<!-- ===== PROBLEM ===== -->
+<div class="problem-section">
+  <div class="section-wrap">
+    <div class="section-head">
+      <span class="section-tag">Problem</span>
+      <h2 class="section-title">こんなお悩みはありませんか？</h2>
+    </div>
     <div class="problem-grid">
-      <div class="problem-card">AIが気になるが何から手をつければよいかわからない</div>
-      <div class="problem-card">社内にIT・AI人材がおらず導入が進まない</div>
-      <div class="problem-card">導入したツールが結局使われていない</div>
-      <div class="problem-card">研修を受けたが現場で活かせていない</div>
+      <div class="problem-card fade-up">
+        <span class="problem-icon">🤔</span>
+        <p>AIが気になるが、何から手をつければよいかわからない</p>
+      </div>
+      <div class="problem-card fade-up">
+        <span class="problem-icon">👥</span>
+        <p>社内にIT・AI人材がおらず、導入が一向に進まない</p>
+      </div>
+      <div class="problem-card fade-up">
+        <span class="problem-icon">📉</span>
+        <p>導入したツールが結局誰にも使われていない</p>
+      </div>
+      <div class="problem-card fade-up">
+        <span class="problem-icon">📚</span>
+        <p>研修を受けたが、現場で実際に活かせていない</p>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- サービス -->
-<section id="services">
-  <div class="section-label">Service</div>
-  <h2>提供サービス</h2>
-  <div class="services-grid">
-    <div class="service-card">
-      <div class="service-icon">🤝</div>
-      <h3>AI顧問サービス</h3>
-      <p>月額固定でAI活用の戦略立案から現場への定着まで継続的にサポート。社内にAI担当者を持つ感覚でご利用いただけます。</p>
+<!-- ===== SERVICES ===== -->
+<div id="services">
+  <div class="section-wrap">
+    <div class="section-head">
+      <span class="section-tag">Service</span>
+      <h2 class="section-title">提供サービス</h2>
+      <p class="section-sub">現場に合わせた3つのアプローチで、AIを組織に定着させます。</p>
     </div>
-    <div class="service-card">
-      <div class="service-icon">🎓</div>
-      <h3>AI人材育成研修</h3>
-      <p>経営層・営業・バックオフィス向けにレベル別で提供。座学だけでなく実務に即したハンズオン形式で確実にスキルを習得。</p>
+    <div class="services-grid">
+      <div class="service-card fade-up">
+        <div class="service-icon-wrap">🤝</div>
+        <h3>AI顧問サービス</h3>
+        <p>月額固定でAI活用の戦略立案から現場への定着まで継続的にサポート。社内にAI担当者を持つ感覚でご利用いただけます。</p>
+      </div>
+      <div class="service-card fade-up">
+        <div class="service-icon-wrap">🎓</div>
+        <h3>AI人材育成研修</h3>
+        <p>経営層・営業・バックオフィス向けにレベル別で提供。座学だけでなく実務に即したハンズオン形式で確実にスキルを習得できます。</p>
+      </div>
+      <div class="service-card fade-up">
+        <div class="service-icon-wrap">🎤</div>
+        <h3>講演・セミナー</h3>
+        <p>「AIで業務はどう変わるか」「中小企業のAI活用事例」など、実体験に基づいたリアルな内容をお届けします。</p>
+      </div>
     </div>
-    <div class="service-card">
-      <div class="service-icon">🎤</div>
-      <h3>講演・セミナー</h3>
-      <p>「AIで業務はどう変わるか」「中小企業のAI活用事例」など、実体験に基づいたリアルな内容をお届けします。</p>
-    </div>
-  </div>
-</section>
-
-<!-- 強み -->
-<div class="strengths">
-  <div>
-    <div class="section-label">Why Yuailo</div>
-    <h2>選ばれる理由</h2>
-    <ul class="strength-list">
-      <li>営業・Web・IT・食品業界と多業種での実務経験を持ち、現場の課題を肌感覚で理解しています</li>
-      <li>実際に自社の営業支援AIツールを内製・展開した実績があり、机上の空論ではなく実践的な支援が可能です</li>
-      <li>「ガチガチのエンジニア」ではないからこそ、IT知識のない方にもわかりやすく説明できます</li>
-      <li>ChatGPT・Claude・Gemini等、主要AIツールを網羅的に把握しており、最適なツール選定をご提案します</li>
-    </ul>
   </div>
 </div>
 
-<!-- CTA -->
-<section id="contact" class="cta">
-  <div class="section-label">Contact</div>
-  <h2>まずはお気軽にご相談ください</h2>
-  <p>初回相談は無料です。現状のお悩みをお聞かせください。</p>
-  <a href="mailto:info@yuailo.com" class="btn">info@yuailo.com へメールする</a>
-</section>
+<!-- ===== WHY ===== -->
+<div class="why-section" id="why">
+  <div class="section-wrap">
+    <div class="section-head">
+      <span class="section-tag">Why Yuailo</span>
+      <h2 class="section-title section-title-light">選ばれる理由</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-item fade-up">
+        <span class="why-num">01</span>
+        <div class="why-body">
+          <h3>現場を肌感覚で知っている</h3>
+          <p>営業・Web・IT・食品業界と多業種での実務経験を持ち、現場の課題をリアルに理解しています。</p>
+        </div>
+      </div>
+      <div class="why-item fade-up">
+        <span class="why-num">02</span>
+        <div class="why-body">
+          <h3>机上の空論ではなく実績ベース</h3>
+          <p>実際に自社の営業支援AIツールを内製・展開した経験があり、実践的な支援が可能です。</p>
+        </div>
+      </div>
+      <div class="why-item fade-up">
+        <span class="why-num">03</span>
+        <div class="why-body">
+          <h3>非エンジニアにもわかりやすく</h3>
+          <p>「ガチガチのエンジニア」ではないからこそ、IT知識のない方にも噛み砕いて説明できます。</p>
+        </div>
+      </div>
+      <div class="why-item fade-up">
+        <span class="why-num">04</span>
+        <div class="why-body">
+          <h3>主要AIツールを網羅的に把握</h3>
+          <p>ChatGPT・Claude・Gemini等、あらゆる選択肢の中から最適なツールをご提案します。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- ===== CTA ===== -->
+<div class="cta-section" id="contact">
+  <div class="section-wrap">
+    <span class="section-tag">Contact</span>
+    <h2 class="section-title">まずは、話してみてください。</h2>
+    <p class="section-sub">初回相談は無料です。現状のお悩みをそのままお聞かせください。</p>
+    <br><br>
+    <div>
+      <a href="mailto:info@yuailo.com" class="cta-email">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v8H2V4z" stroke="#e8a000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        info@yuailo.com
+      </a>
+    </div>
+    <a href="mailto:info@yuailo.com" class="btn-primary" style="margin-top:8px;">
+      メールで相談する
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
 <footer>
+  <span class="footer-logo">Yu<span>ai</span>lo</span>
   <p>&copy; 2026 Yuailo. All rights reserved.</p>
 </footer>
+
+<script>
+  // スクロールアニメーション
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
 
 </body>
 </html>
