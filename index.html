@@ -557,7 +557,7 @@
       .service-grid { grid-template-columns: repeat(3, 1fr); }
       .service-card { padding: 0 0 40px; }
       .service-card-img { height: 160px; }
-      .service-card h3, .service-catch, .service-card p, .service-link { padding: 0 28px; }
+      .service-card > :not(.service-card-img) { padding-left: 28px; padding-right: 28px; }
 
       .why-inner { gap: 48px; }
 
@@ -586,7 +586,6 @@
       .service-grid { grid-template-columns: 1fr; }
       .service-card > :not(.service-card-img) { padding-left: 24px; padding-right: 24px; }
       .service-card { padding-bottom: 36px; }
-      .service-card h3, .service-catch, .service-card p, .service-link { padding: 0; }
 
       .why-inner { grid-template-columns: 1fr; gap: 40px; }
       .why-item { padding: 24px 0; }
