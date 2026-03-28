@@ -519,6 +519,42 @@
     .hero-title   { animation: fadeUp 0.8s ease 0.4s both; }
     .hero-sub     { animation: fadeUp 0.8s ease 0.6s both; }
     .hero-actions { animation: fadeUp 0.8s ease 0.8s both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links li:not(:last-child) { display: none; }
+
+      .hero { min-height: 85vh; }
+      .hero-content { padding: 0 24px 56px; }
+      .hero-title { font-size: 36px; }
+      .hero-sub { font-size: 15px; }
+      .hero-actions { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .btn-primary { width: 100%; text-align: center; padding: 16px 24px; }
+
+      section { padding: 64px 24px; }
+
+      .problem-head { margin-bottom: 40px; }
+      .problem-grid { grid-template-columns: 1fr; gap: 16px; }
+      .problem-card { padding: 32px 24px; }
+      .problem-num { font-size: 40px; margin-bottom: 16px; }
+
+      .service-head { flex-direction: column; align-items: flex-start; margin-bottom: 40px; gap: 16px; }
+      .service-grid { grid-template-columns: 1fr; }
+      .service-card { padding: 40px 24px; }
+
+      .why-inner { grid-template-columns: 1fr; gap: 40px; }
+      .why-item { padding: 24px 0; }
+
+      .cta-section { padding: 80px 24px; }
+      .cta-title { font-size: 32px; }
+      .cta-sub { margin-bottom: 40px; font-size: 14px; }
+      .cta-section .btn-primary { width: 100%; text-align: center; }
+
+      footer { padding: 32px 24px; flex-direction: column; gap: 10px; text-align: center; }
+
+      .section-title { font-size: 28px; }
+    }
   </style>
 </head>
 <body>
