@@ -24,6 +24,7 @@
     }
 
     html { scroll-behavior: smooth; }
+    .sp-only { display: none; }
 
     body {
       background: var(--bg);
@@ -576,7 +577,8 @@
       nav { padding: 0 24px; }
       .nav-links li:not(:last-child) { display: none; }
       .hero-content { padding: 40px 24px 60px; }
-      .hero-title { font-size: 38px; }
+      .hero-title { font-size: 34px; }
+      .sp-only { display: block; }
       .hero-sub { font-size: 15px; }
       .hero-actions { flex-direction: column; align-items: flex-start; gap: 12px; }
       .btn-primary { width: 100%; text-align: center; padding: 14px 24px; }
@@ -617,10 +619,9 @@
   >
   <div class="hero-content">
     <p class="hero-eyebrow">AI Business Consultancy</p>
-    <h1 class="hero-title">AIを使って、<br><em>思考を拡張する</em>。</h1>
+    <h1 class="hero-title">AIを使って、<em>思考を拡張する</em>。</h1>
     <p class="hero-sub">
-      あなたのビジネスに、AIという新しい思考力を。<br>
-      戦略から実装まで、伴走型でご支援します。
+      あなたのビジネスに、AIという新しい思考力を。戦略から実装まで、伴走型でご支援します。
     </p>
     <div class="hero-actions">
       <a href="#contact" class="btn-primary">無料相談を予約する</a>
@@ -633,7 +634,7 @@
 <section class="problem" id="problem">
   <div class="problem-head">
     <p class="section-label">Problem</p>
-    <h2 class="section-title">こんなお悩みはありませんか？</h2>
+    <h2 class="section-title">こんなお悩み、<br class="sp-only">ありませんか？</h2>
   </div>
   <div class="problem-grid">
     <div class="problem-card">
