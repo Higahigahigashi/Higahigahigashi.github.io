@@ -6,9 +6,10 @@
 <title>YuAIlo — LP Animation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Oswald:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="animations.jsx"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; background: #070910; overflow: hidden; }
@@ -17,7 +18,812 @@ html, body { width: 100%; height: 100%; background: #070910; overflow: hidden; }
 </head>
 <body>
 <div id="root"></div>
+<script type="text/babel">
+// ─── Color tokens ───────────────────────────────────────────────
+const C = {
+  bg:      '#070910',
+  bgSurf:  '#111420',
+  bgElev:  '#181c2e',
+  cyan:    '#00d4ff',
+  cyanDim: '#006880',
+  magenta: '#22d96e',
+  green:   '#22d96e',
+  white:   '#ffffff',
+  gray:    '#9aa0b4',
+  grayDim: '#464c68',
+  border:  '#1e2235',
+};
 
-<script type="text/babel" src="animations.jsx" data-presets="react"></script>
+const FONT_JP = "'Zen Maru Gothic', 'Noto Sans JP', sans-serif";
+const FONT_EN = "'Oswald', sans-serif";
+const FONT_MONO = "'Space Mono', monospace";
+
+// ─── Helpers ────────────────────────────────────────────────────
+const a = animate; // alias
+
+function useFade(start, end, dir = 'in') {
+  const t = useTime();
+  if (dir === 'in') return clamp((t - start) / 0.5, 0, 1);
+  return 1 - clamp((t - (end - 0.4)) / 0.4, 0, 1);
+}
+
+function fadeStyle(opacity, ty = 0) {
+  return { opacity, transform: `translateY(${ty}px)` };
+}
+
+// ─── Background grid ────────────────────────────────────────────
+function GridBg({ opacity = 0.08 }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      backgroundImage: `
+        linear-gradient(rgba(0,212,255,${opacity}) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,${opacity}) 1px, transparent 1px)
+      `,
+      backgroundSize: '60px 60px',
+      pointerEvents: 'none',
+    }} />
+  );
+}
+
+// ─── Glitch text ────────────────────────────────────────────────
+function GlitchText({ text, size, color, progress }) {
+  const glitchAmt = Math.sin(progress * 30) * (1 - progress) * 6;
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div style={{
+        fontFamily: FONT_JP, fontSize: size, fontWeight: 900,
+        color, textShadow: `${glitchAmt}px 0 ${C.cyan}, ${-glitchAmt}px 0 ${C.magenta}`,
+        letterSpacing: '-0.02em',
+      }}>{text}</div>
+    </div>
+  );
+}
+
+// ─── Scan line overlay ──────────────────────────────────────────
+function ScanLines() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none',
+      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)',
+      zIndex: 100,
+    }} />
+  );
+}
+
+// ─── Particle dots ──────────────────────────────────────────────
+function Particles({ t, count = 18 }) {
+  const pts = React.useMemo(() => Array.from({ length: count }, (_, i) => ({
+    x: (i * 137.5 * 2.3) % 1280,
+    y: (i * 97.3 * 1.7) % 720,
+    size: 1.5 + (i % 3),
+    speed: 0.3 + (i % 5) * 0.1,
+    phase: i * 0.7,
+  })), [count]);
+  return (
+    <>
+      {pts.map((p, i) => {
+        const py = (p.y + t * p.speed * 60) % 720;
+        const opacity = 0.2 + Math.sin(t * 2 + p.phase) * 0.15;
+        return (
+          <div key={i} style={{
+            position: 'absolute',
+            left: p.x, top: py,
+            width: p.size, height: p.size,
+            borderRadius: '50%',
+            background: i % 3 === 0 ? C.cyan : i % 3 === 1 ? C.magenta : C.green,
+            opacity,
+          }} />
+        );
+      })}
+    </>
+  );
+}
+
+// ─── Cyan divider line ──────────────────────────────────────────
+function CyanLine({ y, progress, color = C.cyan }) {
+  return (
+    <div style={{
+      position: 'absolute', left: 0, top: y,
+      width: `${progress * 100}%`, height: 2,
+      background: `linear-gradient(90deg, ${color}, transparent)`,
+    }} />
+  );
+}
+
+// ─── Scene 1: Hook ──────────────────────────────────────────────
+// 0 - 4s
+function Scene1() {
+  const t = useTime();
+  const progress = clamp(t / 4, 0, 1);
+
+  const titleOpacity = a({ from: 0, to: 1, start: 0.3, end: 1.2, ease: Easing.easeOutCubic })(t);
+  const titleY = a({ from: 30, to: 0, start: 0.3, end: 1.2, ease: Easing.easeOutCubic })(t);
+
+  const sub1Opacity = a({ from: 0, to: 1, start: 1.5, end: 2.2, ease: Easing.easeOutCubic })(t);
+  const sub2Opacity = a({ from: 0, to: 1, start: 2.0, end: 2.8, ease: Easing.easeOutCubic })(t);
+
+  const exitOpacity = a({ from: 1, to: 0, start: 3.5, end: 4.0 })(t);
+  const lineProgress = a({ from: 0, to: 1, start: 0.8, end: 2.5, ease: Easing.easeOutCubic })(t);
+
+  return (
+    <Sprite start={0} end={4.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bg, opacity: exitOpacity }}>
+        <GridBg opacity={0.06} />
+        <Particles t={t} count={14} />
+
+        {/* Center content */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 20,
+        }}>
+          <div style={{ opacity: titleOpacity, transform: `translateY(${titleY}px)` }}>
+            <GlitchText
+              text="あなたのビジネス、"
+              size={62}
+              color={C.white}
+              progress={progress}
+            />
+          </div>
+          <div style={{ opacity: titleOpacity, transform: `translateY(${titleY}px)` }}>
+            <GlitchText
+              text="AIで変われますか？"
+              size={62}
+              color={C.cyan}
+              progress={progress}
+            />
+          </div>
+
+          <CyanLine y={320} progress={lineProgress} />
+
+          <div style={{
+            opacity: sub1Opacity,
+            transform: `translateY(${(1 - sub1Opacity) * 12}px)`,
+            fontFamily: FONT_JP, fontSize: 22, color: C.gray,
+            letterSpacing: '0.05em', marginTop: 8,
+          }}>
+            AIを活用したくても、何から始めればいいかわからない。
+          </div>
+          <div style={{
+            opacity: sub2Opacity,
+            transform: `translateY(${(1 - sub2Opacity) * 12}px)`,
+            fontFamily: FONT_JP, fontSize: 22, color: C.gray,
+            letterSpacing: '0.05em',
+          }}>
+            効果が出るか不安。信頼できる相談相手がいない。
+          </div>
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Pain point card ────────────────────────────────────────────
+function PainCard({ icon, text, delay, exitAt }) {
+  const t = useTime();
+  const opacity = a({ from: 0, to: 1, start: delay, end: delay + 0.5, ease: Easing.easeOutBack })(t);
+  const scale = a({ from: 0.75, to: 1, start: delay, end: delay + 0.5, ease: Easing.easeOutBack })(t);
+  const exitOpacity = a({ from: 1, to: 0, start: exitAt - 0.4, end: exitAt })(t);
+
+  return (
+    <div style={{
+      opacity: opacity * exitOpacity, transform: `scale(${scale})`,
+      background: C.bgElev, border: `1px solid ${C.border}`,
+      borderRadius: 12, padding: '20px 28px',
+      display: 'flex', alignItems: 'center', gap: 16,
+      boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+      width: 340,
+    }}>
+      <div style={{ fontSize: 32 }}>{icon}</div>
+      <div style={{ fontFamily: FONT_JP, fontSize: 16, color: C.gray, lineHeight: 1.6 }}>{text}</div>
+    </div>
+  );
+}
+
+// ─── Scene 2: Pain points ───────────────────────────────────────
+// 4 - 10s
+function Scene2() {
+  const t = useTime();
+  const sceneT = t - 4;
+  const bgOpacity = a({ from: 0, to: 1, start: 4, end: 4.5 })(t);
+  const exitAll = a({ from: 1, to: 0, start: 9.5, end: 10 })(t);
+
+  const labelOpacity = a({ from: 0, to: 1, start: 4.2, end: 4.8 })(t);
+
+  return (
+    <Sprite start={4} end={10.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bgSurf, opacity: bgOpacity * exitAll }}>
+        <GridBg opacity={0.05} />
+        <Particles t={sceneT} count={10} />
+
+        {/* Label */}
+        <div style={{
+          position: 'absolute', top: 80, left: 0, right: 0,
+          textAlign: 'center',
+          opacity: labelOpacity,
+        }}>
+          <div style={{ fontFamily: FONT_EN, fontSize: 13, color: C.magenta, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 12 }}>
+            Common Problems
+          </div>
+          <div style={{ fontFamily: FONT_JP, fontSize: 38, fontWeight: 900, color: C.white }}>
+            こんな経験、ありませんか？
+          </div>
+        </div>
+
+        {/* Pain cards */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: 220,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
+        }}>
+          <PainCard icon="💸" text="高額なITコンサル費用を払ったのに、成果がゼロ" delay={4.8} exitAt={9.5} />
+          <PainCard icon="😤" text="現場を知らない提案で、業務が逆に増えてしまった" delay={5.4} exitAt={9.5} />
+          <PainCard icon="🤔" text="AIが必要かどうかも判断できず、不安なまま放置" delay={6.0} exitAt={9.5} />
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Scene 3: YuAIlo Intro ──────────────────────────────────────
+// 10 - 16s
+function Scene3() {
+  const t = useTime();
+  const sceneT = t - 10;
+  const bgOpacity = a({ from: 0, to: 1, start: 10, end: 10.5 })(t);
+  const exitAll = a({ from: 1, to: 0, start: 15.5, end: 16 })(t);
+
+  const logoScale = a({ from: 0.3, to: 1, start: 10.3, end: 11.2, ease: Easing.easeOutBack })(t);
+  const logoOpacity = a({ from: 0, to: 1, start: 10.3, end: 11.2 })(t);
+
+  const taglineOpacity = a({ from: 0, to: 1, start: 11.5, end: 12.2 })(t);
+  const taglineY = a({ from: 20, to: 0, start: 11.5, end: 12.2 })(t);
+
+  const lineProgress = a({ from: 0, to: 1, start: 11.0, end: 12.5, ease: Easing.easeOutCubic })(t);
+  const descOpacity = a({ from: 0, to: 1, start: 12.5, end: 13.3 })(t);
+
+  // Glow pulse
+  const glowScale = 1 + Math.sin(sceneT * 3) * 0.05;
+
+  return (
+    <Sprite start={10} end={16.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bg, opacity: bgOpacity * exitAll }}>
+        {/* Glow backdrop */}
+        <div style={{
+          position: 'absolute',
+          left: '50%', top: '40%',
+          transform: `translate(-50%, -50%) scale(${glowScale})`,
+          width: 500, height: 300,
+          background: `radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%)`,
+          pointerEvents: 'none',
+        }} />
+
+        <GridBg opacity={0.07} />
+
+        {/* Logo / Brand */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 0,
+        }}>
+          <div style={{
+            opacity: logoOpacity, transform: `scale(${logoScale})`,
+            textAlign: 'center',
+          }}>
+            <div style={{
+              fontFamily: FONT_EN, fontSize: 88, fontWeight: 700,
+              letterSpacing: '0.05em',
+              background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.white} 50%, ${C.magenta} 100%)`,
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              lineHeight: 1,
+            }}>
+              YuAIlo
+            </div>
+            <div style={{
+              fontFamily: FONT_EN, fontSize: 14, letterSpacing: '0.3em',
+              color: C.gray, textTransform: 'uppercase', marginTop: 6,
+            }}>
+              AI Consulting Service
+            </div>
+          </div>
+
+          {/* Cyan line */}
+          <div style={{ position: 'relative', width: 500, height: 2, marginTop: 32 }}>
+            <div style={{
+              position: 'absolute', left: 0, top: 0,
+              width: `${lineProgress * 100}%`, height: 2,
+              background: `linear-gradient(90deg, transparent, ${C.cyan}, transparent)`,
+            }} />
+          </div>
+
+          <div style={{
+            opacity: taglineOpacity,
+            transform: `translateY(${taglineY}px)`,
+            marginTop: 28, textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: FONT_JP, fontSize: 28, fontWeight: 900, color: C.white, lineHeight: 1.5 }}>
+              現場を知るAIコンサルタントが
+            </div>
+            <div style={{ fontFamily: FONT_JP, fontSize: 28, fontWeight: 900, color: C.cyan, lineHeight: 1.5 }}>
+              あなたのビジネスを変える。
+            </div>
+          </div>
+
+          <div style={{
+            opacity: descOpacity,
+            transform: `translateY(${(1 - descOpacity) * 12}px)`,
+            marginTop: 20,
+            fontFamily: FONT_JP, fontSize: 17, color: C.gray,
+            textAlign: 'center', lineHeight: 1.8,
+          }}>
+            不要なら「不要」と言える。現場目線で、本当に使えるAI活用を提案します。
+          </div>
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Scene 4: Career Timeline ───────────────────────────────────
+// 16 - 24s
+function CareerItem({ icon, period, role, detail, delay, color = C.cyan }) {
+  const t = useTime();
+  const opacity = a({ from: 0, to: 1, start: delay, end: delay + 0.5, ease: Easing.easeOutCubic })(t);
+  const x = a({ from: -40, to: 0, start: delay, end: delay + 0.5, ease: Easing.easeOutCubic })(t);
+  const exitOpacity = a({ from: 1, to: 0, start: 23.5, end: 24 })(t);
+
+  return (
+    <div style={{
+      opacity: opacity * exitOpacity, transform: `translateX(${x}px)`,
+      display: 'flex', alignItems: 'flex-start', gap: 20,
+    }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: '50%',
+        background: C.bgElev, border: `2px solid ${color}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 20, flexShrink: 0,
+        boxShadow: `0 0 12px ${color}44`,
+      }}>{icon}</div>
+      <div>
+        <div style={{ fontFamily: FONT_MONO, fontSize: 11, color, letterSpacing: '0.08em', marginBottom: 3 }}>{period}</div>
+        <div style={{ fontFamily: FONT_JP, fontSize: 18, fontWeight: 700, color: C.white, marginBottom: 4 }}>{role}</div>
+        <div style={{ fontFamily: FONT_JP, fontSize: 14, color: C.gray, lineHeight: 1.6 }}>{detail}</div>
+      </div>
+    </div>
+  );
+}
+
+function Scene4() {
+  const t = useTime();
+  const bgOpacity = a({ from: 0, to: 1, start: 16, end: 16.5 })(t);
+  const exitAll = a({ from: 1, to: 0, start: 23.5, end: 24 })(t);
+  const labelOpacity = a({ from: 0, to: 1, start: 16.2, end: 16.8 })(t);
+
+  // Vertical line grows
+  const lineHeight = a({ from: 0, to: 280, start: 16.6, end: 20.5, ease: Easing.easeOutCubic })(t);
+
+  // AI badge
+  const badgeOpacity = a({ from: 0, to: 1, start: 20.8, end: 21.5, ease: Easing.easeOutBack })(t);
+  const badgeScale = a({ from: 0.5, to: 1, start: 20.8, end: 21.5, ease: Easing.easeOutBack })(t);
+
+  return (
+    <Sprite start={16} end={24.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bgSurf, opacity: bgOpacity * exitAll }}>
+        <GridBg opacity={0.05} />
+
+        {/* Header */}
+        <div style={{ position: 'absolute', top: 60, left: 100, opacity: labelOpacity }}>
+          <div style={{ fontFamily: FONT_EN, fontSize: 12, color: C.magenta, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8 }}>
+            Why Trust Us
+          </div>
+          <div style={{ fontFamily: FONT_JP, fontSize: 34, fontWeight: 900, color: C.white }}>
+            多業界を渡り歩いたキャリア
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div style={{ position: 'absolute', left: 100, top: 160 }}>
+          {/* vertical line */}
+          <div style={{
+            position: 'absolute', left: 21, top: 44,
+            width: 2, height: lineHeight,
+            background: `linear-gradient(180deg, ${C.cyan}, ${C.magenta})`,
+          }} />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+            <CareerItem
+              icon="💻"
+              period="2014 – 2022"
+              role="Web業界｜コーダー → エンジニア → Webディレクター"
+              detail="クライアント折衝・ワイヤーフレーム・コンサルティング経験"
+              delay={17.0}
+              color={C.cyan}
+            />
+            <CareerItem
+              icon="🏭"
+              period="2022 – 2024"
+              role="工業系商社｜プラスチック原料・接着剤の営業"
+              detail="レゾナック・コニシ・クラレ等のメーカー品を取り扱い"
+              delay={18.0}
+              color={C.gray}
+            />
+            <CareerItem
+              icon="🍱"
+              period="2025 – 現在"
+              role="食品系商社｜食品添加物・食品素材の営業"
+              detail="大手食品メーカー・セントラルキッチンへのソリューション提案"
+              delay={19.0}
+              color={C.green}
+            />
+          </div>
+        </div>
+
+        {/* AI Badge */}
+        <div style={{
+          position: 'absolute', right: 100, top: '50%', transform: `translateY(-50%) scale(${badgeScale})`,
+          opacity: badgeOpacity,
+          background: C.bg, border: `1px solid ${C.border}`,
+          borderRadius: 16, padding: '28px 36px',
+          textAlign: 'center',
+          boxShadow: `0 0 40px rgba(0,212,255,0.15)`,
+        }}>
+          <div style={{ fontFamily: FONT_EN, fontSize: 48, fontWeight: 700, color: C.cyan, lineHeight: 1 }}>AI</div>
+          <div style={{ fontFamily: FONT_JP, fontSize: 13, color: C.gray, marginTop: 8, lineHeight: 1.6 }}>
+            ChatGPT / Claude<br />Gemini / Grok / Qwen<br />社内AI内製展開
+          </div>
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Scene 5: Services ──────────────────────────────────────────
+// 24 - 37s
+function ServiceCard({ title, en, price, icon, desc, delay, highlight = false, color = C.cyan }) {
+  const t = useTime();
+  const opacity = a({ from: 0, to: 1, start: delay, end: delay + 0.45, ease: Easing.easeOutBack })(t);
+  const scale = a({ from: 0.8, to: 1, start: delay, end: delay + 0.45, ease: Easing.easeOutBack })(t);
+  const exitOpacity = a({ from: 1, to: 0, start: 36.5, end: 37 })(t);
+
+  return (
+    <div style={{
+      opacity: opacity * exitOpacity, transform: `scale(${scale})`,
+      background: highlight ? `linear-gradient(135deg, ${C.bgElev}, ${C.bgSurf})` : C.bgElev,
+      border: `1px solid ${highlight ? color : C.border}`,
+      borderRadius: 10, padding: '14px 18px',
+      boxShadow: highlight ? `0 0 20px ${color}33` : 'none',
+      display: 'flex', flexDirection: 'column', gap: 6,
+      minWidth: 200,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 20 }}>{icon}</span>
+        <div>
+          <div style={{ fontFamily: FONT_EN, fontSize: 10, color, letterSpacing: '0.2em', textTransform: 'uppercase' }}>{en}</div>
+          <div style={{ fontFamily: FONT_JP, fontSize: 15, fontWeight: 700, color: C.white, lineHeight: 1.3 }}>{title}</div>
+        </div>
+      </div>
+      <div style={{ fontFamily: FONT_JP, fontSize: 12, color: C.gray, lineHeight: 1.5 }}>{desc}</div>
+      <div style={{ fontFamily: FONT_MONO, fontSize: 12, color: highlight ? color : C.gray, marginTop: 2 }}>{price}</div>
+    </div>
+  );
+}
+
+function Scene5() {
+  const t = useTime();
+  const bgOpacity = a({ from: 0, to: 1, start: 24, end: 24.5 })(t);
+  const exitAll = a({ from: 1, to: 0, start: 36.5, end: 37 })(t);
+  const labelOpacity = a({ from: 0, to: 1, start: 24.2, end: 24.8 })(t);
+
+  return (
+    <Sprite start={24} end={37.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bg, opacity: bgOpacity * exitAll }}>
+        <GridBg opacity={0.06} />
+
+        {/* Label */}
+        <div style={{ position: 'absolute', top: 48, left: 0, right: 0, textAlign: 'center', opacity: labelOpacity }}>
+          <div style={{ fontFamily: FONT_EN, fontSize: 12, color: C.cyan, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8 }}>
+            Services
+          </div>
+          <div style={{ fontFamily: FONT_JP, fontSize: 34, fontWeight: 900, color: C.white }}>
+            サービスラインナップ
+          </div>
+        </div>
+
+        {/* Cards grid */}
+        <div style={{
+          position: 'absolute', left: 60, right: 60, top: 155,
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+        }}>
+          <ServiceCard
+            icon="🎯" en="Free Diagnosis" title="初回診断"
+            desc="ヒアリングをもとにAI活用を提案。まずはお気軽にご相談ください。"
+            price="無料"
+            delay={24.8} highlight color={C.green}
+          />
+          <ServiceCard
+            icon="🤝" en="AI Advisor" title="AI顧問"
+            desc="月次商談＋チャット/メール/電話サポート。プランA〜Cで選択可能。"
+            price="月額 ¥50,000 〜"
+            delay={25.4} highlight color={C.cyan}
+          />
+          <ServiceCard
+            icon="⚙️" en="System Delivery" title="システム納品"
+            desc="要件定義から開発・納品まで。業務に合わせたAIシステムを構築。"
+            price="¥300,000 〜 1,000,000"
+            delay={26.0}
+          />
+          <ServiceCard
+            icon="📚" en="HR Development" title="人材育成サポート"
+            desc="社内AI人材の育成・活用・ロードマップ設計。研修プログラム提供。"
+            price="¥20,000〜 / 回"
+            delay={26.6}
+          />
+          <ServiceCard
+            icon="🔍" en="3rd Party Audit" title="ITコンサル第三者診断"
+            desc="既存提案の妥当性を中立な立場でアドバイス。変な提案を見抜く。"
+            price="¥10,000 / 回"
+            delay={27.2} highlight color={C.magenta}
+          />
+          <div style={{
+            opacity: a({ from: 0, to: 1, start: 27.8, end: 28.4, ease: Easing.easeOutCubic })(t) *
+                     a({ from: 1, to: 0, start: 36.5, end: 37 })(t),
+            background: `linear-gradient(135deg, rgba(196,31,110,0.15), rgba(0,212,255,0.08))`,
+            border: `1px dashed ${C.cyanDim}`,
+            borderRadius: 10, padding: '14px 18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: FONT_JP, fontSize: 15, fontWeight: 700, color: C.gray }}>
+                不要なときは
+              </div>
+              <div style={{ fontFamily: FONT_JP, fontSize: 18, fontWeight: 900, color: C.white, marginTop: 4 }}>
+                「不要」と言います。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Scene 6: Differentiator ────────────────────────────────────
+// 37 - 43s
+function Scene6() {
+  const t = useTime();
+  const bgOpacity = a({ from: 0, to: 1, start: 37, end: 37.5 })(t);
+  const exitAll = a({ from: 1, to: 0, start: 42.5, end: 43 })(t);
+
+  const topOpacity = a({ from: 0, to: 1, start: 37.3, end: 38.0 })(t);
+
+  // Big "現場×AI" animation
+  const fieldScale = a({ from: 0, to: 1, start: 37.8, end: 38.8, ease: Easing.easeOutBack })(t);
+  const fieldOpacity = a({ from: 0, to: 1, start: 37.8, end: 38.8 })(t);
+  const multScale = a({ from: 0, to: 1, start: 38.5, end: 39.0, ease: Easing.easeOutBack })(t);
+  const aiScale = a({ from: 0, to: 1, start: 39.0, end: 39.8, ease: Easing.easeOutBack })(t);
+
+  const bullet1Opacity = a({ from: 0, to: 1, start: 39.5, end: 40.1 })(t);
+  const bullet2Opacity = a({ from: 0, to: 1, start: 40.1, end: 40.7 })(t);
+  const bullet3Opacity = a({ from: 0, to: 1, start: 40.7, end: 41.3 })(t);
+
+  // Glow pulse
+  const glowA = 0.15 + Math.sin((t - 37) * 2.5) * 0.07;
+
+  return (
+    <Sprite start={37} end={43.2}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bgSurf, opacity: bgOpacity * exitAll }}>
+        {/* Background glow */}
+        <div style={{
+          position: 'absolute', left: '50%', top: '45%',
+          transform: 'translate(-50%,-50%)',
+          width: 700, height: 400,
+          background: `radial-gradient(ellipse, rgba(196,31,110,${glowA}) 0%, transparent 65%)`,
+          pointerEvents: 'none',
+        }} />
+        <GridBg opacity={0.06} />
+
+        {/* Label */}
+        <div style={{ position: 'absolute', top: 55, left: 0, right: 0, textAlign: 'center', opacity: topOpacity }}>
+          <div style={{ fontFamily: FONT_EN, fontSize: 12, color: C.magenta, letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+            Our Strength
+          </div>
+        </div>
+
+        {/* 現場×AI */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: 110,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+        }}>
+          <div style={{
+            opacity: fieldOpacity, transform: `scale(${fieldScale})`,
+            fontFamily: FONT_JP, fontSize: 96, fontWeight: 900,
+            color: C.white, lineHeight: 1,
+          }}>現場</div>
+          <div style={{
+            transform: `scale(${multScale})`,
+            fontFamily: FONT_EN, fontSize: 72, fontWeight: 700,
+            color: C.gray, lineHeight: 1,
+          }}>×</div>
+          <div style={{
+            transform: `scale(${aiScale})`,
+            fontFamily: FONT_EN, fontSize: 96, fontWeight: 700,
+            background: `linear-gradient(135deg, ${C.cyan}, ${C.magenta})`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            lineHeight: 1,
+          }}>AI</div>
+        </div>
+
+        {/* Sub tagline */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: 250,
+          textAlign: 'center',
+          opacity: a({ from: 0, to: 1, start: 39.2, end: 39.8 })(t),
+          fontFamily: FONT_JP, fontSize: 20, color: C.gray, letterSpacing: '0.04em',
+        }}>
+          が、できる唯一のコンサルタント
+        </div>
+
+        {/* Bullets */}
+        <div style={{
+          position: 'absolute', left: '50%', top: 320,
+          transform: 'translateX(-50%)',
+          display: 'flex', flexDirection: 'column', gap: 14, width: 560,
+        }}>
+          {[
+            { icon: '✔', text: '複数業界での現場経験があるから、的外れな提案をしない', op: bullet1Opacity },
+            { icon: '✔', text: '変なITコンサルの提案が正しいかどうか、中立な立場で判断できる', op: bullet2Opacity },
+            { icon: '✔', text: 'AI不要と判断したときは、正直に「不要」とお伝えします', op: bullet3Opacity },
+          ].map(({ icon, text, op }, i) => (
+            <div key={i} style={{
+              opacity: op,
+              transform: `translateX(${(1 - op) * -20}px)`,
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+            }}>
+              <span style={{ color: C.green, fontWeight: 700, fontSize: 16, marginTop: 2 }}>{icon}</span>
+              <span style={{ fontFamily: FONT_JP, fontSize: 16, color: C.gray, lineHeight: 1.6 }}>{text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Scene 7: CTA ───────────────────────────────────────────────
+// 43 - 48s
+function Scene7() {
+  const t = useTime();
+  const bgOpacity = a({ from: 0, to: 1, start: 43, end: 43.5 })(t);
+
+  const logoOpacity = a({ from: 0, to: 1, start: 43.3, end: 44.0, ease: Easing.easeOutCubic })(t);
+  const ctaOpacity = a({ from: 0, to: 1, start: 44.2, end: 44.9, ease: Easing.easeOutBack })(t);
+  const ctaScale = a({ from: 0.85, to: 1, start: 44.2, end: 44.9, ease: Easing.easeOutBack })(t);
+  const subOpacity = a({ from: 0, to: 1, start: 45.0, end: 45.6 })(t);
+
+  // CTA button pulse
+  const btnGlow = 0.3 + Math.sin((t - 44.9) * 4) * 0.15;
+
+  // Glow
+  const bgGlow = 0.12 + Math.sin((t - 43) * 1.5) * 0.04;
+
+  return (
+    <Sprite start={43} end={48.5}>
+      <div style={{ position: 'absolute', inset: 0, background: C.bg, opacity: bgOpacity }}>
+        <div style={{
+          position: 'absolute', left: '50%', top: '50%',
+          transform: 'translate(-50%,-50%)',
+          width: 800, height: 500,
+          background: `radial-gradient(ellipse, rgba(0,212,255,${bgGlow}) 0%, transparent 65%)`,
+          pointerEvents: 'none',
+        }} />
+        <GridBg opacity={0.07} />
+
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 0,
+        }}>
+          {/* Logo */}
+          <div style={{ opacity: logoOpacity, transform: `translateY(${(1 - logoOpacity) * 20}px)`, textAlign: 'center' }}>
+            <div style={{
+              fontFamily: FONT_EN, fontSize: 64, fontWeight: 700,
+              letterSpacing: '0.05em',
+              background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.white} 50%, ${C.magenta} 100%)`,
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              lineHeight: 1,
+            }}>YuAIlo</div>
+            <div style={{ fontFamily: FONT_JP, fontSize: 20, color: C.gray, marginTop: 10 }}>
+              まず、無料診断から始めませんか？
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <div style={{
+            marginTop: 36,
+            opacity: ctaOpacity, transform: `scale(${ctaScale})`,
+          }}>
+            <div style={{
+              fontFamily: FONT_JP, fontSize: 22, fontWeight: 900,
+              color: C.white,
+              background: `linear-gradient(135deg, ${C.magenta}, #8b0d4a)`,
+              borderRadius: 8, padding: '18px 52px',
+              boxShadow: `0 4px 32px rgba(196,31,110,${btnGlow})`,
+              letterSpacing: '0.05em', cursor: 'pointer',
+            }}>
+              無料診断を申し込む →
+            </div>
+          </div>
+
+          {/* Sub info */}
+          <div style={{
+            marginTop: 24, opacity: subOpacity,
+            display: 'flex', gap: 32,
+          }}>
+            {['完全無料', '押し売りなし', 'オンライン対応'].map((label, i) => (
+              <div key={i} style={{
+                fontFamily: FONT_JP, fontSize: 14, color: C.gray,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span style={{ color: C.green, fontSize: 12 }}>✔</span>
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Contact */}
+          <div style={{
+            marginTop: 28, opacity: a({ from: 0, to: 1, start: 45.8, end: 46.4 })(t),
+            fontFamily: FONT_MONO, fontSize: 12, color: C.grayDim, letterSpacing: '0.1em',
+          }}>
+            yuailo-ai.com  ／  お気軽にお問い合わせください
+          </div>
+        </div>
+      </div>
+    </Sprite>
+  );
+}
+
+// ─── Root ───────────────────────────────────────────────────────
+function App() {
+  const t = useTime();
+
+  // Update screen label every second
+  const label = `t=${Math.floor(t)}s`;
+
+  return (
+    <Stage
+      width={1280} height={720} duration={48}
+      background={C.bg}
+      persistKey="yuailo_anim"
+      data-screen-label={label}
+    >
+      <ScanLines />
+      <Scene1 />
+      <Scene2 />
+      <Scene3 />
+      <Scene4 />
+      <Scene5 />
+      <Scene6 />
+      <Scene7 />
+
+      {/* Timestamp label for comment context */}
+      <TimestampLabel />
+    </Stage>
+  );
+}
+
+function TimestampLabel() {
+  const t = useTime();
+  const sec = Math.floor(t);
+  const el = document.querySelector('[data-screen-label]');
+  if (el) el.setAttribute('data-screen-label', `t=${sec}s`);
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
 </body>
 </html>
